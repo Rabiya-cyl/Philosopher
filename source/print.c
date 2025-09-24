@@ -6,7 +6,7 @@
 /*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 08:26:35 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/09/23 08:49:02 by rbiskin          ###   ########.fr       */
+/*   Updated: 2025/09/24 15:07:34 by rbiskin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void print_state(t_rules *r, int id, const char *msg)
     if (!r->stop ) // si tas pas un arret 
     {
         now = timestamp_ms() - r->start_ms; /// temps depuis le debut 
-        printf("%ld %d %s \n", now, id, msg); //message 
+        printf("%ld %d %s\n", now, id, msg); //message 
     }
     pthread_mutex_unlock(&r->print_mx); //je rend le micro 
 }

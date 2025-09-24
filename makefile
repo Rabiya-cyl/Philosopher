@@ -6,37 +6,40 @@
 #    By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/09/23 08:20:07 by rbiskin           #+#    #+#              #
-#    Updated: 2025/09/23 09:19:44 by rbiskin          ###   ########.fr        #
+#    Updated: 2025/09/24 13:34:35 by rbiskin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME    = philo
 CC      = cc
-CFLAGS  = -Wall -Wextra -Werror -Iinclude
-LIBS    = -pthread              
-RM      = rm -f
+CFLAGS  = -Wall -Wextra -Werror -Iinclude -pthread
 
-SRCDIR  = source
-SRC     = $(SRCDIR)/main.c \
-          $(SRCDIR)/parsing.c \
-          $(SRCDIR)/init.c \
-          $(SRCDIR)/routine.c \
-          $(SRCDIR)/time.c \
-          $(SRCDIR)/print.c \
-          $(SRCDIR)/gg_collect.c
+SRCS = \
+	source/main.c \
+	source/parsing.c \
+	source/init.c \
+	source/routine.c \
+	source/time.c \
+	source/print.c \
+	src/gg_init.c \
+	src/gg_malloc.c \
+	src/gg_free.c
 
-OBJ     = $(SRC:.c=.o)
+OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(NAME) $(LIBS)  
+$(NAME): $(OBJS)
+	$(CC) $(OBJS) -pthread -o $(NAME)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(OBJ)
+	rm -f $(OBJS)
 
 fclean: clean
-	$(RM) $(NAME)
+	rm -f $(NAME)
 
 re: fclean all
 
