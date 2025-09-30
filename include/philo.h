@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: alanty <alanty@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/19 07:32:23 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/09/24 13:30:37 by rbiskin          ###   ########.fr       */
+/*   Updated: 2025/09/30 09:15:19 by alanty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,10 @@ typedef struct s_rules
 
     pthread_mutex_t  print_mx;     /* mutex pour printf */
     pthread_mutex_t *forks;        /* tableau de mutex fourchettes */
+
+    pthread_mutex_t death_mutex // mutex pour la salope de mort du philo de mes couilles
+    pthread_mutex_t bz_luca // le nombre de repas
+    pthread_mutex_t monitor // pour la regarder l enorme fiak a sudinaz je rajoute la grosse chienne.
 }   t_rules;
 
 typedef struct s_philo
