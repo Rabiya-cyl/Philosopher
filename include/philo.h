@@ -34,13 +34,16 @@ typedef struct s_rules
     int              stop;
 
     t_gc            *gc;          //handle 
+    pthread_t        monitor_thread;  /* monitor thread */
+    struct s_philo  *philosophers;    /* pointeur vers le tableau des philosophes */
 
     pthread_mutex_t  print_mx;     /* mutex pour printf */
     pthread_mutex_t *forks;        /* tableau de mutex fourchettes */
 
-    pthread_mutex_t death_mutex // mutex pour la salope de mort du philo de mes couilles
-    pthread_mutex_t bz_luca // le nombre de repas
-    pthread_mutex_t monitor // pour la regarder l enorme fiak a sudinaz je rajoute la grosse chienne.
+    pthread_mutex_t death_mutex; // mutex pour la salope de mort du philo de mes couilles
+    pthread_mutex_t bz_luca; // le nombre de repas
+    pthread_mutex_t monitor; // pour la regarder l enorme fiak a sudinaz je rajoute la grosse chienne.
+    pthread_mutex_t stop_mx;
 }   t_rules;
 
 typedef struct s_philo
@@ -61,6 +64,8 @@ void  destroy_all(t_rules *r, t_philo *ph);
 long  timestamp_ms(void);
 void  print_state(t_rules *r, int id, const char *msg);
 void *routine(void *arg);
+
+
 
 void *monitor_routine(void *arg);
 int   regarde_si_le_fils_de_pute_est_pas_mort(t_rules *r, t_philo *ph);
