@@ -73,6 +73,14 @@ static int init_mutexes(t_rules *r)
 {
     if (pthread_mutex_init(&r->print_mx, NULL) != 0)
         return (0);
+    if (pthread_mutex_init(&r->death_mutex, NULL) != 0)
+        return (0);
+    if (pthread_mutex_init(&r->bz_luca, NULL) != 0)
+        return (0);
+    if (pthread_mutex_init(&r->monitor, NULL) != 0)
+        return (0);
+    if (pthread_mutex_init(&r->stop_mx, NULL) != 0)
+        return (0);
 
     r->forks = (pthread_mutex_t *)gg_malloc(r->gc, sizeof(pthread_mutex_t) * r->n_philo);
     if (!r->forks)
@@ -97,6 +105,8 @@ int init_all(t_rules *r, t_philo **ph)
     if (!*ph)
         return (0);
 
+    r->philosophers = *ph;  /* Assigner le pointeur dans la structure rules */
+
     for (int i = 0; i < r->n_philo; i++)
     {
         (*ph)[i].id = i + 1;
@@ -117,6 +127,10 @@ void destroy_all(t_rules *r, t_philo *ph)
         for (int i = 0; i < r->n_philo; i++)
             pthread_mutex_destroy(&r->forks[i]);
     pthread_mutex_destroy(&r->print_mx);
+    pthread_mutex_destroy(&r->death_mutex);
+    pthread_mutex_destroy(&r->bz_luca);
+    pthread_mutex_destroy(&r->monitor);
+    pthread_mutex_destroy(&r->stop_mx);
 
     gg_free_all(r->gc);
     r->gc = NULL;
