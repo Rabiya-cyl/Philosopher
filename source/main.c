@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: alanty <alanty@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 08:34:21 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/09/24 15:09:26 by rbiskin          ###   ########.fr       */
+/*   Updated: 2025/09/30 11:26:34 by alanty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,23 @@
 
 #include "philo.h"
 
+
+
+// si un seule philo
+static int si_un_seule_fils_de_pute(t_rules *r)
+{
+    print_state(r, 1, "has token a fork");
+    usleep(r->t_die * 1000);
+    print_state()(r, 1, "died");
+    return (0);
+}
+
+
+
 int main(int ac, char **av)
 {
     t_rules r;
     t_philo *ph = NULL;
-    int i;
 
     if (!parse_args(ac, av, &r))
         return (printf("Error: bad gay\n"), 1);
