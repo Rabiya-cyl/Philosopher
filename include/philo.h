@@ -6,7 +6,7 @@
 /*   By: alanty <alanty@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/19 07:32:23 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/09/30 09:15:19 by alanty           ###   ########.fr       */
+/*   Updated: 2025/09/30 12:12:50 by alanty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,5 +61,11 @@ void  destroy_all(t_rules *r, t_philo *ph);
 long  timestamp_ms(void);
 void  print_state(t_rules *r, int id, const char *msg);
 void *routine(void *arg);
+
+void *monitor_routine(void *arg);
+int   regarde_si_le_fils_de_pute_est_pas_mort(t_rules *r, t_philo *ph);
+int   nbr_de_repas(t_rules *r, t_philo *ph);
+int   la_putain_de_simulation_qui_se_termine(t_rules *r);
+
 
 #endif
