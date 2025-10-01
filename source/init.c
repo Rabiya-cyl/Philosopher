@@ -75,9 +75,9 @@ static int init_mutexes(t_rules *r)
         return (0);
     if (pthread_mutex_init(&r->death_mutex, NULL) != 0)
         return (0);
-    if (pthread_mutex_init(&r->bz_luca, NULL) != 0)
+    if (pthread_mutex_init(&r->meal_mutex, NULL) != 0)
         return (0);
-    if (pthread_mutex_init(&r->monitor, NULL) != 0)
+    if (pthread_mutex_init(&r->monitor_mutex, NULL) != 0)
         return (0);
     if (pthread_mutex_init(&r->stop_mx, NULL) != 0)
         return (0);
@@ -128,8 +128,8 @@ void destroy_all(t_rules *r, t_philo *ph)
             pthread_mutex_destroy(&r->forks[i]);
     pthread_mutex_destroy(&r->print_mx);
     pthread_mutex_destroy(&r->death_mutex);
-    pthread_mutex_destroy(&r->bz_luca);
-    pthread_mutex_destroy(&r->monitor);
+    pthread_mutex_destroy(&r->meal_mutex);
+    pthread_mutex_destroy(&r->monitor_mutex);
     pthread_mutex_destroy(&r->stop_mx);
 
     gg_free_all(r->gc);

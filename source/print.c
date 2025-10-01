@@ -27,8 +27,11 @@ void print_state(t_rules *r, int id, const char *msg)
 {
     long now;
     
-    pthread_mutex_lock(&r->print_mx); //je prend le micro 
-    now = timestamp_ms() - r->start_ms; /// temps depuis le debut 
-    printf("%ld %d %s\n", now, id, msg); //message 
-    pthread_mutex_unlock(&r->print_mx); //je rend le micro 
+    pthread_mutex_lock(&r->print_mx);
+    if (!is_simulation_stopped(r))
+    {
+        now = timestamp_ms() - r->start_ms;
+        printf("%ld %d %s\n", now, id, msg);
+    }
+    pthread_mutex_unlock(&r->print_mx);
 }
