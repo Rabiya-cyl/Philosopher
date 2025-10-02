@@ -6,7 +6,7 @@
 /*   By: alanty <alanty@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/19 07:32:23 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/10/01 15:51:55 by alanty           ###   ########.fr       */
+/*   Updated: 2025/10/02 13:53:51 by alanty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,8 @@ void *routine(void *arg);
 int   is_simulation_stopped(t_rules *r);
 
 void *monitor_routine(void *arg);
-int   check_philosopher_death(t_rules *r, t_philo *ph);
-int   check_meals_complete(t_rules *r, t_philo *ph);
-int   is_simulation_finished(t_rules *r);
+int   check_death(t_rules *r, t_philo *ph);
+int   check_meals_done(t_rules *r, t_philo *ph);
 
 
 #endif

@@ -1,15 +1,10 @@
 #include "philo.h"
 
-static void ms_sleep(long ms)
+static void ft_usleep(long ms)
 {
     long start = timestamp_ms();
     while ((timestamp_ms() - start) < ms)
-    {
-        if (ms > 10)
-            usleep(500);
-        else
-            usleep(100);
-    }
+        usleep(500);
 }
 
 int is_simulation_stopped(t_rules *r)
@@ -21,38 +16,21 @@ int is_simulation_stopped(t_rules *r)
     return (stopped);
 }
 
-
 static int take_forks(t_philo *p)
 {
-    pthread_mutex_t *first_fork;
-    pthread_mutex_t *second_fork;
-    
-    // Stratégie anti-deadlock améliorée : toujours prendre les forks dans le même ordre
-    // En fonction de l'adresse mémoire pour éviter les deadlocks circulaires
-    if (p->left_fork < p->right_fork)
-    {
-        first_fork = p->left_fork;
-        second_fork = p->right_fork;
-    }
-    else
-    {
-        first_fork = p->right_fork;
-        second_fork = p->left_fork;
-    }
-    
-    pthread_mutex_lock(first_fork);
+    pthread_mutex_lock(p->left_fork);
     if (is_simulation_stopped(p->rules))
     {
-        pthread_mutex_unlock(first_fork);
+        pthread_mutex_unlock(p->left_fork);
         return (0);
     }
     print_state(p->rules, p->id, "has taken a fork");
     
-    pthread_mutex_lock(second_fork);
+    pthread_mutex_lock(p->right_fork);
     if (is_simulation_stopped(p->rules))
     {
-        pthread_mutex_unlock(second_fork);
-        pthread_mutex_unlock(first_fork);
+        pthread_mutex_unlock(p->right_fork);
+        pthread_mutex_unlock(p->left_fork);
         return (0);
     }
     print_state(p->rules, p->id, "has taken a fork");
@@ -60,55 +38,94 @@ static int take_forks(t_philo *p)
     return (1);
 }
 
-
-
 static void release_forks(t_philo *p)
 {
     pthread_mutex_unlock(p->left_fork);
     pthread_mutex_unlock(p->right_fork);
 }
 
-static void philo_eat(t_philo *p)
+static void eat_sleep_routine(t_philo *p)
 {
-    print_state(p->rules, p->id, "is eating");
+    // Take forks
+    if (!take_forks(p))
+        return;
     
-    // Mettre à jour le temps du dernier repas ET le compteur de repas sous le même mutex
+    // Eat
+    print_state(p->rules, p->id, "is eating");
     pthread_mutex_lock(&p->rules->meal_mutex);
     p->last_meal_ms = timestamp_ms();
-    p->meals++;
+    pthread_mutex_unlock(&p->rules->meal_mutex);
+    ft_usleep(p->rules->t_eat);
+    
+    // Update meal count after eating
+    if (!is_simulation_stopped(p->rules))
+    {
+        pthread_mutex_lock(&p->rules->meal_mutex);
+        p->meals++;
+        pthread_mutex_unlock(&p->rules->meal_mutex);
+    }
+    
+    // Sleep
+    print_state(p->rules, p->id, "is sleeping");
+    release_forks(p);
+    ft_usleep(p->rules->t_sleep);
+}
+
+static void think_routine(t_philo *p, int silent)
+{
+    long time_to_think;
+    
+    pthread_mutex_lock(&p->rules->meal_mutex);
+    time_to_think = (p->rules->t_die - (timestamp_ms() - p->last_meal_ms) - p->rules->t_eat) / 2;
     pthread_mutex_unlock(&p->rules->meal_mutex);
     
-    ms_sleep(p->rules->t_eat);
+    if (time_to_think < 0)
+        time_to_think = 0;
+    if (time_to_think == 0 && silent == 1)
+        time_to_think = 1;
+    if (time_to_think > 600)
+        time_to_think = 200;
+    
+    if (silent == 0)
+        print_state(p->rules, p->id, "is thinking");
+    
+    if (time_to_think > 0)
+        ft_usleep(time_to_think);
+}
+
+static void *lone_philo_routine(t_philo *p)
+{
+    pthread_mutex_lock(p->left_fork);
+    print_state(p->rules, p->id, "has taken a fork");
+    ft_usleep(p->rules->t_die);
+    print_state(p->rules, p->id, "died");
+    pthread_mutex_unlock(p->left_fork);
+    return (NULL);
 }
 
 void *routine(void *arg)
 {
     t_philo *p = (t_philo *)arg;
 
-    // Décalage intelligent pour éviter la contention initiale
-    // Les philosophes pairs attendent un peu avant de commencer
+    // Initialize last meal time
+    pthread_mutex_lock(&p->rules->meal_mutex);
+    p->last_meal_ms = p->rules->start_ms;
+    pthread_mutex_unlock(&p->rules->meal_mutex);
+
+    // Handle single philosopher case
+    if (p->rules->n_philo == 1)
+        return (lone_philo_routine(p));
+
+    // Stagger start: even philosophers think first to avoid deadlock
     if (p->id % 2 == 0)
-    {
-        print_state(p->rules, p->id, "is thinking");
-        ms_sleep(p->rules->t_eat / 2);
-    }
+        think_routine(p, 1);
 
     while (!is_simulation_stopped(p->rules))
     {
-        print_state(p->rules, p->id, "is thinking");
-        
-        if (!take_forks(p))
-            break;
-            
-        philo_eat(p);
-        
-        release_forks(p);
-        
+        eat_sleep_routine(p);
         if (is_simulation_stopped(p->rules))
             break;
-            
-        print_state(p->rules, p->id, "is sleeping");
-        ms_sleep(p->rules->t_sleep);
+        think_routine(p, 0);
     }
     return (NULL);
 }
@@ -116,6 +133,7 @@ void *routine(void *arg)
 int check_death(t_rules *r, t_philo *ph)
 {
     int i = 0;
+    
     while (i < r->n_philo)
     {
         pthread_mutex_lock(&r->meal_mutex);
@@ -129,15 +147,18 @@ int check_death(t_rules *r, t_philo *ph)
             {
                 r->stop = 1;
                 pthread_mutex_unlock(&r->stop_mx);
+                
+                // Print death message immediately
                 pthread_mutex_lock(&r->print_mx);
                 printf("%ld %d died\n", timestamp_ms() - r->start_ms, ph[i].id);
                 pthread_mutex_unlock(&r->print_mx);
+                return (1);
             }
             else
             {
                 pthread_mutex_unlock(&r->stop_mx);
+                return (1);
             }
-            return (1);
         }
         i++;
     }
@@ -147,58 +168,53 @@ int check_death(t_rules *r, t_philo *ph)
 int check_meals_done(t_rules *r, t_philo *ph)
 {
     int i = 0;
-    int all_ate_enough = 1;
     
     if (r->must_eat == -1)
         return (0);
         
+    pthread_mutex_lock(&r->meal_mutex);
+    i = 0;
     while (i < r->n_philo)
     {
-        pthread_mutex_lock(&r->meal_mutex);
-        int meals = ph[i].meals;
-        pthread_mutex_unlock(&r->meal_mutex);
-        
-        if (meals < r->must_eat)
+        if (ph[i].meals < r->must_eat)
         {
-            all_ate_enough = 0;
+            pthread_mutex_unlock(&r->meal_mutex);
+            return (0);
         }
         i++;
     }
+    pthread_mutex_unlock(&r->meal_mutex);
     
-    if (all_ate_enough)
+    // All philosophers have eaten enough
+    pthread_mutex_lock(&r->stop_mx);
+    if (!r->stop)
     {
-        pthread_mutex_lock(&r->stop_mx);
         r->stop = 1;
         pthread_mutex_unlock(&r->stop_mx);
         return (1);
     }
-    return (0);
+    else
+    {
+        pthread_mutex_unlock(&r->stop_mx);
+        return (1);
+    }
 }
 
 void *monitor_routine(void *arg)
 {
     t_rules *r = (t_rules *)arg;
     
-    while (!is_simulation_finished(r))
+    // Don't monitor if there's only one philosopher (handled in routine)
+    if (r->n_philo == 1)
+        return (NULL);
+        
+    while (!is_simulation_stopped(r))
     {
-        if (check_philosopher_death(r, r->philosophers) || check_meals_complete(r, r->philosophers))
+        if (check_death(r, r->philosophers))
             break;
-        usleep(500); // Vérification plus fréquente pour une détection rapide
+        if (check_meals_done(r, r->philosophers))
+            break;
+        usleep(500);
     }
     return (NULL);
-}
-
-int check_philosopher_death(t_rules *r, t_philo *ph)
-{
-    return check_death(r, ph);
-}
-
-int check_meals_complete(t_rules *r, t_philo *ph)
-{
-    return check_meals_done(r, ph);
-}
-
-int is_simulation_finished(t_rules *r)
-{
-    return is_simulation_stopped(r);
 }
