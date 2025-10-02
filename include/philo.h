@@ -6,7 +6,7 @@
 /*   By: alanty <alanty@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/19 07:32:23 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/09/30 12:12:50 by alanty           ###   ########.fr       */
+/*   Updated: 2025/10/01 15:51:55 by alanty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,9 @@ typedef struct s_rules
     pthread_mutex_t  print_mx;     /* mutex pour printf */
     pthread_mutex_t *forks;        /* tableau de mutex fourchettes */
 
-    pthread_mutex_t death_mutex; // mutex pour la salope de mort du philo de mes couilles
-    pthread_mutex_t bz_luca; // le nombre de repas
-    pthread_mutex_t monitor; // pour la regarder l enorme fiak a sudinaz je rajoute la grosse chienne.
+    pthread_mutex_t death_mutex; // mutex pour la mort du philosophe
+    pthread_mutex_t meal_mutex; // mutex pour le nombre de repas
+    pthread_mutex_t monitor_mutex; // mutex pour le monitoring
     pthread_mutex_t stop_mx;
 }   t_rules;
 
@@ -64,13 +64,12 @@ void  destroy_all(t_rules *r, t_philo *ph);
 long  timestamp_ms(void);
 void  print_state(t_rules *r, int id, const char *msg);
 void *routine(void *arg);
-
-
+int   is_simulation_stopped(t_rules *r);
 
 void *monitor_routine(void *arg);
-int   regarde_si_le_fils_de_pute_est_pas_mort(t_rules *r, t_philo *ph);
-int   nbr_de_repas(t_rules *r, t_philo *ph);
-int   la_putain_de_simulation_qui_se_termine(t_rules *r);
+int   check_philosopher_death(t_rules *r, t_philo *ph);
+int   check_meals_complete(t_rules *r, t_philo *ph);
+int   is_simulation_finished(t_rules *r);
 
 
 #endif
