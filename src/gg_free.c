@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   gg_free.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: rcaylan <rcaylan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/24 08:39:36 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/09/24 08:39:38 by rbiskin          ###   ########.fr       */
+/*   Updated: 2025/10/13 13:30:34 by rcaylan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,8 @@ void	gg_free_all(t_gg_data *data)
  */
 void	gg_free(t_gg_data *data, void *ptr)
 {
-	t_gg_node	*current;
-	t_gg_node	*prev;
+	t_gg_node *current;
+	t_gg_node *prev;
 
 	if (!data || !ptr)
 		return ;

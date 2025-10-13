@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   gg_malloc.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
+/*   By: rcaylan <rcaylan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/24 08:39:21 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/09/24 08:40:20 by rbiskin          ###   ########.fr       */
+/*   Updated: 2025/10/13 13:30:39 by rcaylan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,8 +87,8 @@ void	*gg_calloc(t_gg_data *data, const size_t count, const size_t size)
  */
 void	*gg_realloc(t_gg_data *data, void *ptr, const size_t new_size)
 {
-	void		*new_ptr;
-	t_gg_node	*current;
+	void *new_ptr;
+	t_gg_node *current;
 
 	if (!data)
 		return (NULL);
