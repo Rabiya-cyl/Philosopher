@@ -1,27 +1,5 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   gg_malloc.c                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rcaylan <rcaylan@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/24 08:39:21 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/10/13 13:30:39 by rcaylan          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../include/gg_collect.h"
 
-/**
- * Allocates memory of any size. It works very similarly to malloc.
- * On failure, it returns NULL. Never free allocated memory using the
- * default free function when allocating memory with gg_malloc. You
- * should use gg_free or gg_free_all.
- *
- * @param data The main garbage data struct.
- * @param size The size of memory to allocate.
- * @return A pointer to the newly allocated memory.
- */
 void	*gg_malloc(t_gg_data *data, const size_t size)
 {
 	t_gg_node	*node;
@@ -47,16 +25,6 @@ void	*gg_malloc(t_gg_data *data, const size_t size)
 	return (ptr);
 }
 
-/**
- * Works similarly to calloc, allocating size times count memory and
- * returning a new pointer to it. On failure, it returns NULL.
- *
- * @param data The main garbage data struct.
- * @param count The count of memory to allocate.
- * @param size The size of memory to allocate.
- *
- * @return A pointer to the newly allocated memory.
- */
 void	*gg_calloc(t_gg_data *data, const size_t count, const size_t size)
 {
 	void	*ptr;
@@ -76,15 +44,6 @@ void	*gg_calloc(t_gg_data *data, const size_t count, const size_t size)
 	return (ptr);
 }
 
-/**
- * Reallocates memory for a pointer. It works similarly to realloc.
- * On failure, it returns NULL.
- *
- * @param data The main garbage data struct.
- * @param ptr The pointer to reallocate.
- * @param new_size A pointer to the newly allocated memory.
- * @return
- */
 void	*gg_realloc(t_gg_data *data, void *ptr, const size_t new_size)
 {
 	void *new_ptr;

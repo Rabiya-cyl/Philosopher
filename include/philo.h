@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcaylan <rcaylan@student.42.fr>            +#+  +:+       +#+        */
+/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/19 07:32:23 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/10/13 13:29:58 by rcaylan          ###   ########.fr       */
+/*   Created: 2025/10/21 12:33:45 by rbiskin           #+#    #+#             */
+/*   Updated: 2025/10/21 12:33:46 by rbiskin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,29 +28,26 @@ typedef struct s_rules
 	long					t_die;
 	long					t_eat;
 	long					t_sleep;
-	int must_eat; /* -1 si non fourni */
+	int						must_eat;
 	long					start_ms;
 	int						stop;
 
-	t_gc *gc;                     // handle
-	pthread_t monitor_thread;     /* monitor thread */
-	struct s_philo *philosophers; /* pointeur vers le tableau des philosophes */
+	t_gc					*gc;
+	pthread_t				monitor_thread;
+	struct s_philo			*philosophers;
 
-	pthread_mutex_t print_mx; /* mutex pour printf */
-	pthread_mutex_t *forks;   /* tableau de mutex fourchettes */
+	pthread_mutex_t			print_mx;
+	pthread_mutex_t			*forks;
 
 	pthread_mutex_t			death_mutex;
-	// mutex pour la salope de mort du philo de mes couilles
-	pthread_mutex_t bz_luca; // le nombre de repas
+	pthread_mutex_t			bz_luca;
 	pthread_mutex_t			monitor;
-	// pour la regarder l enorme fiak a sudinaz je rajoute la grosse chienne.
 	pthread_mutex_t			stop_mx;
 }							t_rules;
 
 typedef struct s_philo
-//    la simulation prématurément alors que le philosophe mange encore
 {
-	int id; /* 1..n */
+	int						id;
 	long					last_meal_ms;
 	int						meals;
 	pthread_t				thread;
@@ -58,8 +55,6 @@ typedef struct s_philo
 	pthread_mutex_t			*left_fork;
 	pthread_mutex_t			*right_fork;
 }							t_philo;
-
-/* prototypes */
 int							parse_args(int ac, char **av, t_rules *r);
 int							init_all(t_rules *r, t_philo **ph);
 void						destroy_all(t_rules *r, t_philo *ph);

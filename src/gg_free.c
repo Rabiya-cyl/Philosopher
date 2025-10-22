@@ -1,24 +1,5 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   gg_free.c                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rcaylan <rcaylan@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/24 08:39:36 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/10/13 13:30:34 by rcaylan          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../include/gg_collect.h"
 
-/**
- * Frees everything allocated inside the garbage collector's cache
- * and sets the pointers to NULL. You cannot continue using other
- * features after freeing everything.
- *
- * @param data The main garbage data struct.
- */
 void	gg_free_all(t_gg_data *data)
 {
 	t_gg_node	*current;
@@ -40,14 +21,6 @@ void	gg_free_all(t_gg_data *data)
 	free(data);
 }
 
-/**
- * Frees up previously allocated memory and sets the pointers to NULL.
- * This method is safe in most cases and will simply not do anything when
- * trying to free up unallocated space.
- *
- * @param data The main garbage data struct.
- * @param ptr The pointer to free.
- */
 void	gg_free(t_gg_data *data, void *ptr)
 {
 	t_gg_node *current;

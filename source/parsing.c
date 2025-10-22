@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcaylan <rcaylan@student.42.fr>            +#+  +:+       +#+        */
+/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/24 08:32:11 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/10/13 11:05:43 by rcaylan          ###   ########.fr       */
+/*   Created: 2025/10/21 12:37:53 by rbiskin           #+#    #+#             */
+/*   Updated: 2025/10/21 12:50:50 by rbiskin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,20 @@
 static long	ato_long_pos(const char *s)
 {
 	long	n;
+	int		i;
 
 	n = 0;
 	if (!s || !*s)
 		return (-1);
-	for (int i = 0; s[i]; i++)
+	i = 0;
+	while (s[i])
 	{
 		if (s[i] < '0' || s[i] > '9')
 			return (-1);
 		n = n * 10 + (s[i] - '0');
 		if (n > 2147483647)
 			return (-1);
+		i++;
 	}
 	return (n);
 }

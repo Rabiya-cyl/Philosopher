@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcaylan <rcaylan@student.42.fr>            +#+  +:+       +#+        */
+/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/24 08:47:42 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/10/13 13:49:25 by rcaylan          ###   ########.fr       */
+/*   Created: 2025/10/21 12:37:44 by rbiskin           #+#    #+#             */
+/*   Updated: 2025/10/22 06:34:52 by rbiskin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ int	init_all(t_rules *r, t_philo **ph)
 	*ph = (t_philo *)gg_malloc(r->gc, sizeof(t_philo) * r->n_philo);
 	if (!*ph)
 		return (0);
-	r->philosophers = *ph; /* Assigner le pointeur dans la structure rules */
+	r->philosophers = *ph;
 	i = 0;
 	while (i < r->n_philo)
 	{
@@ -69,7 +69,7 @@ int	init_all(t_rules *r, t_philo **ph)
 
 void	destroy_all(t_rules *r, t_philo *ph)
 {
-	int i;
+	int	i;
 
 	(void)ph;
 	if (r->forks)
