@@ -1,220 +1,322 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   routine.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/22 06:39:33 by rbiskin           #+#    #+#             */
+/*   Updated: 2025/10/22 15:37:06 by rbiskin          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-static void ft_usleep(long ms)
+static void	ms_sleep(long ms)
 {
-    long start = timestamp_ms();
-    while ((timestamp_ms() - start) < ms)
-        usleep(500);
+	long	start;
+
+	start = timestamp_ms();
+	while ((timestamp_ms() - start) < ms)
+	{
+		if (ms > 10)
+			usleep(600);
+		else
+			usleep(100);
+	}
 }
 
-int is_simulation_stopped(t_rules *r)
+int	is_simulation_stopped(t_rules *r)
 {
-    int stopped;
-    pthread_mutex_lock(&r->stop_mx);
-    stopped = r->stop;
-    pthread_mutex_unlock(&r->stop_mx);
-    return (stopped);
+	int	stopped;
+
+	pthread_mutex_lock(&r->stop_mx);
+	stopped = r->stop;
+	pthread_mutex_unlock(&r->stop_mx);
+	return (stopped);
 }
 
-static int take_forks(t_philo *p)
+static int	prend_la_putain_de_fourchette(t_philo *p)
 {
-    pthread_mutex_lock(p->left_fork);
-    if (is_simulation_stopped(p->rules))
-    {
-        pthread_mutex_unlock(p->left_fork);
-        return (0);
-    }
-    print_state(p->rules, p->id, "has taken a fork");
-    
-    pthread_mutex_lock(p->right_fork);
-    if (is_simulation_stopped(p->rules))
-    {
-        pthread_mutex_unlock(p->right_fork);
-        pthread_mutex_unlock(p->left_fork);
-        return (0);
-    }
-    print_state(p->rules, p->id, "has taken a fork");
-    
-    return (1);
+	int	critical_case;
+	int	is_odd_total;
+
+	critical_case = p->rules->t_die < (p->rules->t_eat + p->rules->t_sleep)
+		* 1.5;
+	is_odd_total = p->rules->n_philo % 2 == 1;
+	if (is_odd_total && critical_case && p->id == p->rules->n_philo)
+	{
+		pthread_mutex_lock(p->right_fork);
+		if (is_simulation_stopped(p->rules))
+		{
+			pthread_mutex_unlock(p->right_fork);
+			return (0);
+		}
+		print_state(p->rules, p->id, "has taken a fork");
+		pthread_mutex_lock(p->left_fork);
+	}
+	else if (p->id % 2 == 1)
+	{
+		pthread_mutex_lock(p->left_fork);
+		if (is_simulation_stopped(p->rules))
+		{
+			pthread_mutex_unlock(p->left_fork);
+			return (0);
+		}
+		print_state(p->rules, p->id, "has taken a fork");
+		pthread_mutex_lock(p->right_fork);
+		if (is_simulation_stopped(p->rules))
+		{
+			pthread_mutex_unlock(p->right_fork);
+			pthread_mutex_unlock(p->left_fork);
+			return (0);
+		}
+		print_state(p->rules, p->id, "has taken a fork");
+	}
+	else
+	{
+		pthread_mutex_lock(p->right_fork);
+		if (is_simulation_stopped(p->rules))
+		{
+			pthread_mutex_unlock(p->right_fork);
+			return (0);
+		}
+		print_state(p->rules, p->id, "has taken a fork");
+		if (p->rules->t_die < (p->rules->t_eat + p->rules->t_sleep) * 1.5)
+		{
+			pthread_mutex_lock(&p->rules->death_mutex);
+			p->last_meal_ms = timestamp_ms();
+			pthread_mutex_unlock(&p->rules->death_mutex);
+		}
+		pthread_mutex_lock(p->left_fork);
+		if (is_simulation_stopped(p->rules))
+		{
+			pthread_mutex_unlock(p->left_fork);
+			pthread_mutex_unlock(p->right_fork);
+			return (0);
+		}
+		print_state(p->rules, p->id, "has taken a fork");
+	}
+	return (1);
 }
 
-static void release_forks(t_philo *p)
+static void	release_forks(t_philo *p)
 {
-    pthread_mutex_unlock(p->left_fork);
-    pthread_mutex_unlock(p->right_fork);
+	pthread_mutex_unlock(p->left_fork);
+	pthread_mutex_unlock(p->right_fork);
 }
 
-static void eat_sleep_routine(t_philo *p)
+static void	philo_eat(t_philo *p)
 {
-    // Take forks
-    if (!take_forks(p))
-        return;
-    
-    // Eat
-    print_state(p->rules, p->id, "is eating");
-    pthread_mutex_lock(&p->rules->meal_mutex);
-    p->last_meal_ms = timestamp_ms();
-    pthread_mutex_unlock(&p->rules->meal_mutex);
-    ft_usleep(p->rules->t_eat);
-    
-    // Update meal count after eating
-    if (!is_simulation_stopped(p->rules))
-    {
-        pthread_mutex_lock(&p->rules->meal_mutex);
-        p->meals++;
-        pthread_mutex_unlock(&p->rules->meal_mutex);
-    }
-    
-    // Sleep
-    print_state(p->rules, p->id, "is sleeping");
-    release_forks(p);
-    ft_usleep(p->rules->t_sleep);
+	int	i;
+	int	philo_finished;
+
+	pthread_mutex_lock(&p->rules->death_mutex);
+	if (p->rules->must_eat > 0 && p->meals >= p->rules->must_eat)
+	{
+		pthread_mutex_unlock(&p->rules->death_mutex);
+		return ;
+	}
+	pthread_mutex_unlock(&p->rules->death_mutex);
+	if (is_simulation_stopped(p->rules))
+		return ;
+	print_state(p->rules, p->id, "is eating");
+	pthread_mutex_lock(&p->rules->death_mutex);
+	p->last_meal_ms = timestamp_ms();
+	pthread_mutex_unlock(&p->rules->death_mutex);
+	ms_sleep(p->rules->t_eat);
+	if (is_simulation_stopped(p->rules))
+		return ;
+	pthread_mutex_lock(&p->rules->death_mutex);
+	if (!is_simulation_stopped(p->rules) && (p->rules->must_eat == -1
+			|| p->meals < p->rules->must_eat))
+	{
+		p->meals++;
+		if (p->rules->must_eat > 0)
+		{
+			philo_finished = 0;
+			i = 0;
+			while (i < p->rules->n_philo)
+			{
+				while (i < p->rules->n_philo)
+				{
+					if (p->rules->philosophers[i].meals >= p->rules->must_eat)
+						philo_finished++;
+					i++;
+				}
+				if (philo_finished == p->rules->n_philo)
+				{
+					pthread_mutex_lock(&p->rules->stop_mx);
+					p->rules->stop = 1;
+					pthread_mutex_unlock(&p->rules->stop_mx);
+				}
+			}
+		}
+	}
+	pthread_mutex_unlock(&p->rules->death_mutex);
 }
 
-static void think_routine(t_philo *p, int silent)
+void	*routine(void *arg)
 {
-    long time_to_think;
-    
-    pthread_mutex_lock(&p->rules->meal_mutex);
-    time_to_think = (p->rules->t_die - (timestamp_ms() - p->last_meal_ms) - p->rules->t_eat) / 2;
-    pthread_mutex_unlock(&p->rules->meal_mutex);
-    
-    if (time_to_think < 0)
-        time_to_think = 0;
-    if (time_to_think == 0 && silent == 1)
-        time_to_think = 1;
-    if (time_to_think > 600)
-        time_to_think = 200;
-    
-    if (silent == 0)
-        print_state(p->rules, p->id, "is thinking");
-    
-    if (time_to_think > 0)
-        ft_usleep(time_to_think);
+	t_philo	*p;
+
+	p = (t_philo *)arg;
+	if (p->rules->n_philo % 2 == 0)
+	{
+		if (p->id % 2 == 0)
+			usleep(500);
+	}
+	else
+	{
+		if (p->id % 2 == 0)
+			usleep(200);
+		else if (p->id > 1)
+			usleep(500);
+	}
+	while (!is_simulation_stopped(p->rules))
+	{
+		print_state(p->rules, p->id, "is thinking");
+		if (p->rules->t_die < (p->rules->t_eat + p->rules->t_sleep) * 1.5)
+		{
+		}
+		else if (p->rules->t_die < (p->rules->t_eat + p->rules->t_sleep) * 2)
+		{
+			usleep(200);
+		}
+		else
+		{
+			usleep(1000);
+		}
+		if (!prend_la_putain_de_fourchette(p))
+			break ;
+		philo_eat(p);
+		release_forks(p);
+		if (is_simulation_stopped(p->rules))
+			break ;
+		print_state(p->rules, p->id, "is sleeping");
+		ms_sleep(p->rules->t_sleep);
+	}
+	return (NULL);
 }
 
-static void *lone_philo_routine(t_philo *p)
+int	check_death(t_rules *r, t_philo *ph)
 {
-    pthread_mutex_lock(p->left_fork);
-    print_state(p->rules, p->id, "has taken a fork");
-    ft_usleep(p->rules->t_die);
-    print_state(p->rules, p->id, "died");
-    pthread_mutex_unlock(p->left_fork);
-    return (NULL);
+	int		i;
+	long	time_since_meal;
+
+	i = 0;
+	while (i < r->n_philo)
+	{
+		pthread_mutex_lock(&r->death_mutex);
+		time_since_meal = timestamp_ms() - ph[i].last_meal_ms;
+		pthread_mutex_unlock(&r->death_mutex);
+		if (time_since_meal >= r->t_die)
+		{
+			print_state(r, ph[i].id, "died");
+			pthread_mutex_lock(&r->stop_mx);
+			r->stop = 1;
+			pthread_mutex_unlock(&r->stop_mx);
+			return (1);
+		}
+		i++;
+	}
+	return (0);
 }
 
-void *routine(void *arg)
+int	check_meals_done(t_rules *r)
 {
-    t_philo *p = (t_philo *)arg;
+	int	philo_finished;
+	int	i;
 
-    // Initialize last meal time
-    pthread_mutex_lock(&p->rules->meal_mutex);
-    p->last_meal_ms = p->rules->start_ms;
-    pthread_mutex_unlock(&p->rules->meal_mutex);
-
-    // Handle single philosopher case
-    if (p->rules->n_philo == 1)
-        return (lone_philo_routine(p));
-
-    // Stagger start: even philosophers think first to avoid deadlock
-    if (p->id % 2 == 0)
-        think_routine(p, 1);
-
-    while (!is_simulation_stopped(p->rules))
-    {
-        eat_sleep_routine(p);
-        if (is_simulation_stopped(p->rules))
-            break;
-        think_routine(p, 0);
-    }
-    return (NULL);
+	if (r->must_eat < 0)
+		return (0);
+	if (is_simulation_stopped(r))
+		return (1);
+	pthread_mutex_lock(&r->death_mutex);
+	philo_finished = 0;
+	i = 0;
+	while (i < r->n_philo)
+	{
+		if (r->philosophers[i].meals >= r->must_eat)
+			philo_finished++;
+		if (r->philosophers[i].meals > r->must_eat)
+			r->philosophers[i].meals = r->must_eat;
+		i++;
+	}
+	if (philo_finished == r->n_philo)
+	{
+		pthread_mutex_lock(&r->stop_mx);
+		r->stop = 1;
+		pthread_mutex_unlock(&r->stop_mx);
+		pthread_mutex_unlock(&r->death_mutex);
+		return (1);
+	}
+	pthread_mutex_unlock(&r->death_mutex);
+	return (0);
 }
 
-int check_death(t_rules *r, t_philo *ph)
+void	*monitor_routine(void *arg)
 {
-    int i = 0;
-    
-    while (i < r->n_philo)
-    {
-        pthread_mutex_lock(&r->meal_mutex);
-        long time_since_meal = timestamp_ms() - ph[i].last_meal_ms;
-        pthread_mutex_unlock(&r->meal_mutex);
-        
-        if (time_since_meal > r->t_die)
-        {
-            pthread_mutex_lock(&r->stop_mx);
-            if (!r->stop)
-            {
-                r->stop = 1;
-                pthread_mutex_unlock(&r->stop_mx);
-                
-                // Print death message immediately
-                pthread_mutex_lock(&r->print_mx);
-                printf("%ld %d died\n", timestamp_ms() - r->start_ms, ph[i].id);
-                pthread_mutex_unlock(&r->print_mx);
-                return (1);
-            }
-            else
-            {
-                pthread_mutex_unlock(&r->stop_mx);
-                return (1);
-            }
-        }
-        i++;
-    }
-    return (0);
+	t_rules	*r;
+	
+	r = (t_rules *)arg;
+	while (!la_putain_de_simulation_qui_se_termine(r))
+	{
+		if (regarde_si_le_fils_de_pute_est_pas_mort(r, r->philosophers)
+			|| nbr_de_repas(r, r->philosophers))
+		{
+			break ;
+		}
+		if (r->t_die < (r->t_eat + r->t_sleep) * 1.5)
+		{
+			usleep(100);
+		}
+		else
+		{
+			usleep(300);
+		}
+	}
+	return (NULL);
 }
 
-int check_meals_done(t_rules *r, t_philo *ph)
+int	regarde_si_le_fils_de_pute_est_pas_mort(t_rules *r, t_philo *ph)
 {
-    int i = 0;
-    
-    if (r->must_eat == -1)
-        return (0);
-        
-    pthread_mutex_lock(&r->meal_mutex);
-    i = 0;
-    while (i < r->n_philo)
-    {
-        if (ph[i].meals < r->must_eat)
-        {
-            pthread_mutex_unlock(&r->meal_mutex);
-            return (0);
-        }
-        i++;
-    }
-    pthread_mutex_unlock(&r->meal_mutex);
-    
-    // All philosophers have eaten enough
-    pthread_mutex_lock(&r->stop_mx);
-    if (!r->stop)
-    {
-        r->stop = 1;
-        pthread_mutex_unlock(&r->stop_mx);
-        return (1);
-    }
-    else
-    {
-        pthread_mutex_unlock(&r->stop_mx);
-        return (1);
-    }
+	return (check_death(r, ph));
 }
 
-void *monitor_routine(void *arg)
+int	nbr_de_repas(t_rules *r, t_philo *ph)
 {
-    t_rules *r = (t_rules *)arg;
-    
-    // Don't monitor if there's only one philosopher (handled in routine)
-    if (r->n_philo == 1)
-        return (NULL);
-        
-    while (!is_simulation_stopped(r))
-    {
-        if (check_death(r, r->philosophers))
-            break;
-        if (check_meals_done(r, r->philosophers))
-            break;
-        usleep(500);
-    }
-    return (NULL);
+	int	i;
+	int	all_ate_enough;
+	int	meals;
+
+	i = 0;
+	all_ate_enough = 1;
+	if (r->must_eat == -1)
+		return (0);
+	while (i < r->n_philo)
+	{
+		pthread_mutex_lock(&r->death_mutex);
+		meals = ph[i].meals;
+		pthread_mutex_unlock(&r->death_mutex);
+		if (meals < r->must_eat)
+		{
+			all_ate_enough = 0;
+			break ;
+		}
+		i++;
+	}
+	if (all_ate_enough)
+	{
+		pthread_mutex_lock(&r->stop_mx);
+		r->stop = 1;
+		pthread_mutex_unlock(&r->stop_mx);
+		return (1);
+	}
+	return (0);
+}
+
+int	la_putain_de_simulation_qui_se_termine(t_rules *r)
+{
+	return (is_simulation_stopped(r));
 }

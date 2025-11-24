@@ -3,13 +3,12 @@
 /*                                                        :::      ::::::::   */
 /*   print.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: alanty <alanty@student.42.fr>              +#+  +:+       +#+        */
+/*   By: rbiskin <rbiskin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/23 08:26:35 by rbiskin           #+#    #+#             */
-/*   Updated: 2025/10/02 11:56:04 by alanty           ###   ########.fr       */
+/*   Updated: 2025/10/21 12:33:27 by rbiskin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 /*
 Si deux philosophes parlent en même temps et bah  on n’entend rien (mélange).
@@ -18,20 +17,18 @@ Donc, avant de parler, ils doivent prendre le micro (mutex lock).
 
 Quand ils ont fini, ils rendent le micro (mutex unlock).
 
-Le message contient : le temps écoulé depuis le début, l’ID du philosophe, et l’action.
+Le message contient : le temps écoulé depuis le début, l’ID du philosophe,
+	et l’action.
 */
 
 #include "philo.h"
 
-void print_state(t_rules *r, int id, const char *msg)
+void	print_state(t_rules *r, int id, const char *msg)
 {
-    long now;
-    
-    pthread_mutex_lock(&r->print_mx);
-    if (!is_simulation_stopped(r))
-    {
-        now = timestamp_ms() - r->start_ms;
-        printf("%ld %d %s\n", now, id, msg);
-    }
-    pthread_mutex_unlock(&r->print_mx);
+	long	now;
+
+	pthread_mutex_lock(&r->print_mx);
+	now = timestamp_ms() - r->start_ms;
+	printf("%ld %d %s\n", now, id, msg);
+	pthread_mutex_unlock(&r->print_mx);
 }
