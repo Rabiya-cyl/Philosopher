@@ -7,6 +7,9 @@ SRCS = \
 	source/parsing.c \
 	source/init.c \
 	source/routine.c \
+	source/routine_utils.c \
+	source/fork_utils.c \
+	source/monitor.c \
 	source/time.c \
 	source/print.c \
 	src/gg_init.c \
